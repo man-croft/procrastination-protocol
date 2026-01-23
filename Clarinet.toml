@@ -1,22 +1,58 @@
 [project]
-name = "procrastination-protocol"
-description = "The only way to win is to do absolutely nothing - Anti-productivity DeFi game"
-authors = ["man-croft"]
+name = 'procrastination-protocol'
+description = '''The only way to win is to do absolutely nothing - Anti-productivity staking game'''
+authors = ['man-croft']
 telemetry = true
-cache_dir = "./.cache"
+cache_dir = './.cache'
+requirements = []
 
-# [contracts.counter]
-# path = "contracts/counter.clar"
-# epoch = "latest"
+[contracts.nft-trait]
+path = 'contracts/nft-trait.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.penalty-pool]
+path = 'contracts/penalty-pool.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.streak-tracker]
+path = 'contracts/streak-tracker.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.procrastination-vault]
+path = 'contracts/procrastination-vault.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.temptation-generator]
+path = 'contracts/temptation-generator.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.leaderboard]
+path = 'contracts/leaderboard.clar'
+clarity_version = 2
+epoch = '2.5'
+
+[contracts.achievement-nft]
+path = 'contracts/achievement-nft.clar'
+clarity_version = 2
+epoch = '2.5'
 
 [repl.analysis]
-passes = ["check_checker"]
-check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }
+passes = [
+    'check_checker',
+    'call_checker',
+]
 
-# Check-checker settings:
-# trusted_sender: if true, inputs are trusted after tx_sender has been checked.
-# trusted_caller: if true, inputs are trusted after contract-caller has been checked.
-# callee_filter: if true, untrusted data may be passed into a private function without a
-# warning, if it gets checked inside. This check will also propagate up to the
-# caller.
-# More informations: https://www.hiro.so/blog/new-safety-checks-in-clarinet
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = false
+api_url = 'https://api.hiro.so'
