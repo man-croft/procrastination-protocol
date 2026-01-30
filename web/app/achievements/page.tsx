@@ -54,8 +54,9 @@ export default function AchievementsPage() {
 
   const handleClaim = async (badgeId: number) => {
     const { getClaimBadgeOptions } = await import('../../lib/contracts');
+    const options = await getClaimBadgeOptions(badgeId);
     await openContractCall({
-      ...getClaimBadgeOptions(badgeId),
+      ...options,
       onFinish: () => {
         setTimeout(loadBadges, 5000);
       }
