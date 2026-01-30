@@ -1,5 +1,4 @@
 import { network } from './stacks';
-import { openContractCall } from '@stacks/connect';
 import { 
   fetchCallReadOnlyFunction, 
   cvToValue, 
