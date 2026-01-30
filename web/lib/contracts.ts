@@ -107,19 +107,6 @@ export async function hasBadge(user: string, badgeType: number) {
 }
 
 // Transaction Helpers (Action Generators)
-export function startProcrastinating(amount: number) {
-  return {
-    contractAddress: CONTRACTS.VAULT.address,
-    contractName: CONTRACTS.VAULT.name,
-    functionName: 'start-procrastinating',
-    functionArgs: [uintCV(amount)],
-    postConditionMode: PostConditionMode.Deny,
-    postConditions: [
-      Pc.principal(window.alert ? "ST..." : "ST...").willSendEq(amount).ustx() // Placeholder
-    ]
-  };
-}
-
 export function getStartOptions(amount: number, userAddress: string) {
   return {
     contractAddress: CONTRACTS.VAULT.address,
