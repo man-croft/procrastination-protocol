@@ -1,22 +1,3 @@
-'use client';
-
-import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
-import { openContractCall } from '@stacks/connect';
-import { 
-  fetchCallReadOnlyFunction, 
-  cvToValue, 
-  standardPrincipalCV, 
-  uintCV,
-  noneCV,
-  someCV,
-  PostConditionMode,
-  Pc
-} from '@stacks/transactions';
-
-const network = process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet'
-  ? STACKS_MAINNET
-  : STACKS_TESTNET;
-
 // Contract Config
 const DEPLOYER = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
 
@@ -47,8 +28,18 @@ export const CONTRACTS = {
   }
 } as const;
 
+async function getNetwork() {
+  const { STACKS_MAINNET, STACKS_TESTNET } = await import('@stacks/network');
+  return process.env.NEXT_PUBLIC_STACKS_NETWORK === 'mainnet'
+    ? STACKS_MAINNET
+    : STACKS_TESTNET;
+}
+
 // Read Only Helpers
 export async function getLockedAmount(user: string) {
+  const { fetchCallReadOnlyFunction, cvToValue, standardPrincipalCV } = await import('@stacks/transactions');
+  const network = await getNetwork();
+  
   const result = await fetchCallReadOnlyFunction({
     network,
     contractAddress: CONTRACTS.VAULT.address,
@@ -61,6 +52,9 @@ export async function getLockedAmount(user: string) {
 }
 
 export async function getStreakDays(user: string) {
+  const { fetchCallReadOnlyFunction, cvToValue, standardPrincipalCV } = await import('@stacks/transactions');
+  const network = await getNetwork();
+
   const result = await fetchCallReadOnlyFunction({
     network,
     contractAddress: CONTRACTS.STREAK.address,
@@ -74,6 +68,9 @@ export async function getStreakDays(user: string) {
 
 export async function getCurrentTemptation() {
   try {
+    const { fetchCallReadOnlyFunction, cvToValue } = await import('@stacks/transactions');
+    const network = await getNetwork();
+
     const result = await fetchCallReadOnlyFunction({
       network,
       contractAddress: CONTRACTS.TEMPTATION.address,
@@ -82,13 +79,16 @@ export async function getCurrentTemptation() {
       functionArgs: [],
       senderAddress: DEPLOYER
     });
-    return cvToValue(result); // Returns object or null (err)
+    return cvToValue(result);
   } catch (e) {
     return null;
   }
 }
 
 export async function getLeaderboard() {
+  const { fetchCallReadOnlyFunction, cvToValue } = await import('@stacks/transactions');
+  const network = await getNetwork();
+
   const result = await fetchCallReadOnlyFunction({
     network,
     contractAddress: CONTRACTS.LEADERBOARD.address,
@@ -101,6 +101,9 @@ export async function getLeaderboard() {
 }
 
 export async function hasBadge(user: string, badgeType: number) {
+  const { fetchCallReadOnlyFunction, cvToValue, standardPrincipalCV, uintCV } = await import('@stacks/transactions');
+  const network = await getNetwork();
+
   const result = await fetchCallReadOnlyFunction({
     network,
     contractAddress: CONTRACTS.NFT.address,
@@ -109,11 +112,12 @@ export async function hasBadge(user: string, badgeType: number) {
     functionArgs: [standardPrincipalCV(user), uintCV(badgeType)],
     senderAddress: user
   });
-  return cvToValue(result); // Returns bool
+  return cvToValue(result);
 }
 
 // Transaction Helpers (Action Generators)
-export function getStartOptions(amount: number, userAddress: string) {
+export async function getStartOptions(amount: number, userAddress: string) {
+  const { uintCV, PostConditionMode, Pc } = await import('@stacks/transactions');
   return {
     contractAddress: CONTRACTS.VAULT.address,
     contractName: CONTRACTS.VAULT.name,
@@ -126,39 +130,52 @@ export function getStartOptions(amount: number, userAddress: string) {
   };
 }
 
-export const CLAIM_OPTIONS = {
-  contractAddress: CONTRACTS.VAULT.address,
-  contractName: CONTRACTS.VAULT.name,
-  functionName: 'claim-rewards',
-  functionArgs: [],
-  postConditionMode: PostConditionMode.Allow
-};
+export async function getClaimOptions() {
+  const { PostConditionMode } = await import('@stacks/transactions');
+  return {
+    contractAddress: CONTRACTS.VAULT.address,
+    contractName: CONTRACTS.VAULT.name,
+    functionName: 'claim-rewards',
+    functionArgs: [],
+    postConditionMode: PostConditionMode.Allow
+  };
+}
 
-export const QUIT_OPTIONS = {
-  contractAddress: CONTRACTS.VAULT.address,
-  contractName: CONTRACTS.VAULT.name,
-  functionName: 'quit-procrastinating',
-  functionArgs: [],
-  postConditionMode: PostConditionMode.Allow
-};
+export async function getQuitOptions() {
+  const { PostConditionMode } = await import('@stacks/transactions');
+  return {
+    contractAddress: CONTRACTS.VAULT.address,
+    contractName: CONTRACTS.VAULT.name,
+    functionName: 'quit-procrastinating',
+    functionArgs: [],
+    postConditionMode: PostConditionMode.Allow
+  };
+}
 
-export const CLAIM_TEMPTATION_OPTIONS = {
-  contractAddress: CONTRACTS.TEMPTATION.address,
-  contractName: CONTRACTS.TEMPTATION.name,
-  functionName: 'claim-temptation',
-  functionArgs: [],
-  postConditionMode: PostConditionMode.Allow
-};
+export async function getClaimTemptationOptions() {
+  const { PostConditionMode } = await import('@stacks/transactions');
+  return {
+    contractAddress: CONTRACTS.TEMPTATION.address,
+    contractName: CONTRACTS.TEMPTATION.name,
+    functionName: 'claim-temptation',
+    functionArgs: [],
+    postConditionMode: PostConditionMode.Allow
+  };
+}
 
-export const UPDATE_LEADERBOARD_OPTIONS = {
-  contractAddress: CONTRACTS.LEADERBOARD.address,
-  contractName: CONTRACTS.LEADERBOARD.name,
-  functionName: 'update-my-position',
-  functionArgs: [],
-  postConditionMode: PostConditionMode.Allow
-};
+export async function getUpdateLeaderboardOptions() {
+  const { PostConditionMode } = await import('@stacks/transactions');
+  return {
+    contractAddress: CONTRACTS.LEADERBOARD.address,
+    contractName: CONTRACTS.LEADERBOARD.name,
+    functionName: 'update-my-position',
+    functionArgs: [],
+    postConditionMode: PostConditionMode.Allow
+  };
+}
 
-export function getClaimBadgeOptions(badgeId: number) {
+export async function getClaimBadgeOptions(badgeId: number) {
+  const { uintCV, PostConditionMode } = await import('@stacks/transactions');
   return {
     contractAddress: CONTRACTS.NFT.address,
     contractName: CONTRACTS.NFT.name,
