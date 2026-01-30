@@ -110,3 +110,18 @@
     )
   )
 )
+
+(define-read-only (get-locked-amount (user principal))
+  (ok (default-to u0 (map-get? locked-amounts user)))
+)
+
+(define-read-only (get-current-bonus (user principal))
+  (let
+    (
+      (amount (default-to u0 (map-get? locked-amounts user)))
+      (streak-days (unwrap! (contract-call? .streak-tracker get-streak-days user) (ok u0)))
+      (multiplier (get-multiplier streak-days))
+    )
+    (ok (if (> multiplier u100) (/ (* amount (- multiplier u100)) u100) u0))
+  )
+)
