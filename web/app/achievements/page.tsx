@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useWallet } from '../../hooks/use-wallet';
-import { hasBadge, getClaimBadgeOptions, getStreakDays } from '../../lib/contracts';
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
 
@@ -32,11 +31,13 @@ export default function AchievementsPage() {
     if (!address) return;
     setLoading(true);
     try {
+      // Dynamic import to avoid build-time SSR issues with @stacks/transactions
+      const { hasBadge, getStreakDays } = await import('../../lib/contracts');
+      
       const streak = await getStreakDays(address);
       setCurrentStreak(Number(streak || 0));
 
       const owned: number[] = [];
-      // Check each badge sequentially
       for (const badge of BADGES) {
         const ownedResult = await hasBadge(address, badge.id);
         if (ownedResult) {
@@ -52,6 +53,7 @@ export default function AchievementsPage() {
   };
 
   const handleClaim = async (badgeId: number) => {
+    const { getClaimBadgeOptions } = await import('../../lib/contracts');
     await openContractCall({
       ...getClaimBadgeOptions(badgeId),
       onFinish: () => {
@@ -65,6 +67,7 @@ export default function AchievementsPage() {
       <Navbar />
       
       <div className="max-w-6xl mx-auto px-6 py-12">
+
         <h1 className="text-4xl font-bold mb-2 text-center">Achievements</h1>
         <p className="text-center text-zinc-600 dark:text-zinc-400 mb-12">
           Milestones for your journey of doing nothing. Claim them as NFTs.
