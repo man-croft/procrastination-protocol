@@ -106,61 +106,6 @@ export async function hasBadge(user: string, badgeType: number) {
   return cvToValue(result); // Returns bool
 }
 
-} as const;
-
-// Read Only Helpers
-export async function getLockedAmount(user: string) {
-  const result = await callReadOnlyFunction({
-    network,
-    contractAddress: CONTRACTS.VAULT.address,
-    contractName: CONTRACTS.VAULT.name,
-    functionName: 'get-locked-amount',
-    functionArgs: [standardPrincipalCV(user)],
-    senderAddress: user
-  });
-  return cvToValue(result);
-}
-
-export async function getStreakDays(user: string) {
-  const result = await callReadOnlyFunction({
-    network,
-    contractAddress: CONTRACTS.STREAK.address,
-    contractName: CONTRACTS.STREAK.name,
-    functionName: 'get-streak-days',
-    functionArgs: [standardPrincipalCV(user)],
-    senderAddress: user
-  });
-  return cvToValue(result);
-}
-
-export async function getCurrentTemptation() {
-  try {
-    const result = await callReadOnlyFunction({
-      network,
-      contractAddress: CONTRACTS.TEMPTATION.address,
-      contractName: CONTRACTS.TEMPTATION.name,
-      functionName: 'get-current-temptation',
-      functionArgs: [],
-      senderAddress: DEPLOYER
-    });
-    return cvToValue(result); // Returns object or null (err)
-  } catch (e) {
-    return null;
-  }
-}
-
-export async function getLeaderboard() {
-  const result = await callReadOnlyFunction({
-    network,
-    contractAddress: CONTRACTS.LEADERBOARD.address,
-    contractName: CONTRACTS.LEADERBOARD.name,
-    functionName: 'get-leaderboard',
-    functionArgs: [],
-    senderAddress: DEPLOYER
-  });
-  return cvToValue(result);
-}
-
 // Transaction Helpers (Action Generators)
 export function startProcrastinating(amount: number) {
   return {
@@ -170,13 +115,11 @@ export function startProcrastinating(amount: number) {
     functionArgs: [uintCV(amount)],
     postConditionMode: PostConditionMode.Deny,
     postConditions: [
-      Pc.principal(window.alert ? "ST..." : "ST...").willSendEq(amount).ustx() // Placeholder, caller must inject address
+      Pc.principal(window.alert ? "ST..." : "ST...").willSendEq(amount).ustx() // Placeholder
     ]
   };
 }
 
-// Since openContractCall needs the address at runtime for post-conditions, 
-// we'll usually construct options inside the component or pass address here.
 export function getStartOptions(amount: number, userAddress: string) {
   return {
     contractAddress: CONTRACTS.VAULT.address,
@@ -195,7 +138,7 @@ export const CLAIM_OPTIONS = {
   contractName: CONTRACTS.VAULT.name,
   functionName: 'claim-rewards',
   functionArgs: [],
-  postConditionMode: PostConditionMode.Allow // Receiving funds
+  postConditionMode: PostConditionMode.Allow
 };
 
 export const QUIT_OPTIONS = {
