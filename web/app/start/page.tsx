@@ -20,8 +20,9 @@ export default function StartPage() {
       setIsSubmitting(true);
       const stxAmount = Math.floor(parseFloat(amount) * 1000000); // STX to microSTX
       
+      const opts = await getStartOptions(stxAmount, address);
       const options = {
-        ...getStartOptions(stxAmount, address),
+        ...opts,
         onFinish: (data: any) => {
           console.log('Transaction finished:', data);
           setIsSubmitting(false);

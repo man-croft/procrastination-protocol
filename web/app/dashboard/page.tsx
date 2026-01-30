@@ -5,9 +5,9 @@ import { useWallet } from '../../hooks/use-wallet';
 import { 
   getLockedAmount, 
   getStreakDays, 
-  CLAIM_OPTIONS, 
-  QUIT_OPTIONS, 
-  UPDATE_LEADERBOARD_OPTIONS 
+  getClaimOptions, 
+  getQuitOptions, 
+  getUpdateLeaderboardOptions 
 } from '../../lib/contracts';
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
@@ -31,8 +31,6 @@ export default function DashboardPage() {
       const locked = await getLockedAmount(address);
       const days = await getStreakDays(address);
       
-      // Handle response parsing if needed, assumed cvToValue returns primitives
-      // contracts.ts uses cvToValue which handles uint -> bigint/number
       setLockedAmount(Number(locked || 0));
       setStreakDays(Number(days || 0));
     } catch (e) {
@@ -42,11 +40,11 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAction = async (options: any) => {
+  const handleAction = async (optionsGetter: () => Promise<any>) => {
+    const options = await optionsGetter();
     await openContractCall({
       ...options,
       onFinish: () => {
-        // Optimistic update or reload
         setTimeout(loadData, 5000); 
       }
     });
@@ -96,21 +94,21 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
-            onClick={() => handleAction(CLAIM_OPTIONS)}
+            onClick={() => handleAction(getClaimOptions)}
             className="p-6 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-xl font-bold hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             Claim Rewards
           </button>
 
           <button
-             onClick={() => handleAction(UPDATE_LEADERBOARD_OPTIONS)}
+             onClick={() => handleAction(getUpdateLeaderboardOptions)}
              className="p-6 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
           >
             Update Leaderboard
           </button>
 
           <button
-            onClick={() => handleAction(QUIT_OPTIONS)}
+            onClick={() => handleAction(getQuitOptions)}
             className="p-6 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             Quit (10% Penalty)

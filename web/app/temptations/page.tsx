@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useWallet } from '../../hooks/use-wallet';
-import { getCurrentTemptation, CLAIM_TEMPTATION_OPTIONS } from '../../lib/contracts';
+import { getCurrentTemptation, getClaimTemptationOptions } from '../../lib/contracts';
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
 
@@ -46,8 +46,9 @@ export default function TemptationsPage() {
   };
 
   const handleClaim = async () => {
+    const options = await getClaimTemptationOptions();
     await openContractCall({
-      ...CLAIM_TEMPTATION_OPTIONS,
+      ...options,
       onFinish: () => {
         setTemptation(null);
       }
