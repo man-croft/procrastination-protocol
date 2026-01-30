@@ -10,8 +10,11 @@ export function useWallet() {
   useEffect(() => {
     const checkConnection = () => {
       if (isConnected()) {
-        const data = getLocalStorage();
-        setAddress(data?.addresses?.stx?.[0]?.address || null);
+        const data = getLocalStorage() as any;
+        // Handle both object (old) and array (new) formats
+        const stxAddress = data?.addresses?.stx?.[0]?.address 
+          || (Array.isArray(data?.addresses) ? data.addresses.find((a: any) => a.type === 'stx' || !a.type)?.address : null);
+        setAddress(stxAddress || null);
       } else {
         setAddress(null);
       }
@@ -23,8 +26,11 @@ export function useWallet() {
 
   const connectWallet = useCallback(async () => {
     try {
-      const response = await connect();
-      setAddress(response.addresses.stx[0].address);
+      const response = await connect() as any;
+      const stxAddress = response.addresses?.stx?.[0]?.address 
+        || (Array.isArray(response.addresses) ? response.addresses.find((a: any) => a.type === 'stx' || !a.type)?.address : null);
+      
+      setAddress(stxAddress);
       return response;
     } catch (error) {
       console.error('Failed to connect wallet:', error);
