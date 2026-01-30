@@ -27,9 +27,15 @@
   (begin
     (asserts! (is-eq contract-caller (var-get vault-contract)) ERR_UNAUTHORIZED)
     (asserts! (not (is-eq recipient (as-contract tx-sender))) ERR_UNAUTHORIZED)
-    (if (> amount u0)
-      (as-contract (stx-transfer? amount tx-sender recipient))
-      (ok true)
+    (let
+      (
+        (balance (stx-get-balance (as-contract tx-sender)))
+        (payout (if (> balance amount) amount balance))
+      )
+      (if (> payout u0)
+        (as-contract (stx-transfer? payout tx-sender recipient))
+        (ok true)
+      )
     )
   )
 )

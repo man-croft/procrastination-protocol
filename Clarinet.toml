@@ -6,37 +6,37 @@ telemetry = true
 cache_dir = './.cache'
 requirements = []
 
-[contracts.nft-trait]
+[contracts.nft-trait-v2]
 path = 'contracts/nft-trait.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.penalty-pool]
+[contracts.penalty-pool-v2]
 path = 'contracts/penalty-pool.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.streak-tracker]
+[contracts.streak-tracker-v2]
 path = 'contracts/streak-tracker.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.procrastination-vault]
+[contracts.procrastination-vault-v2]
 path = 'contracts/procrastination-vault.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.temptation-generator]
+[contracts.temptation-generator-v2]
 path = 'contracts/temptation-generator.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.leaderboard]
+[contracts.leaderboard-v2]
 path = 'contracts/leaderboard.clar'
 clarity_version = 2
 epoch = '2.5'
 
-[contracts.achievement-nft]
+[contracts.achievement-nft-v2]
 path = 'contracts/achievement-nft.clar'
 clarity_version = 2
 epoch = '2.5'

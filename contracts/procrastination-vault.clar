@@ -80,10 +80,12 @@
 )
 
 (define-read-only (get-multiplier (days uint))
-  (if (>= days u30) u105 ;; 5% bonus
-    (if (>= days u14) u103 ;; 3% bonus
-      (if (>= days u7) u101 ;; 1% bonus
-        u100 ;; 0% bonus
+  (if (>= days u100) u110 ;; 10% bonus
+    (if (>= days u30) u105 ;; 5% bonus
+      (if (>= days u14) u103 ;; 3% bonus
+        (if (>= days u7) u101 ;; 1% bonus
+          u100 ;; 0% bonus
+        )
       )
     )
   )
@@ -108,5 +110,20 @@
       (map-delete locked-amounts user)
       (as-contract (contract-call? .streak-tracker end-streak user))
     )
+  )
+)
+
+(define-read-only (get-locked-amount (user principal))
+  (ok (default-to u0 (map-get? locked-amounts user)))
+)
+
+(define-read-only (get-current-bonus (user principal))
+  (let
+    (
+      (amount (default-to u0 (map-get? locked-amounts user)))
+      (streak-days (unwrap! (contract-call? .streak-tracker get-streak-days user) (ok u0)))
+      (multiplier (get-multiplier streak-days))
+    )
+    (ok (if (> multiplier u100) (/ (* amount (- multiplier u100)) u100) u0))
   )
 )

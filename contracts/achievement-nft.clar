@@ -17,21 +17,24 @@
 ;; Badge Types
 (define-constant BADGE-BEGINNER u1) ;; 1 day
 (define-constant BADGE-EXPERT u2)   ;; 7 days
-(define-constant BADGE-MASTER u3)   ;; 30 days
+(define-constant BADGE-PRO u3)      ;; 14 days
+(define-constant BADGE-MASTER u4)   ;; 30 days
+(define-constant BADGE-LEGEND u5)   ;; 100 days
 
 (define-read-only (get-last-token-id)
   (ok (var-get last-token-id))
 )
 
 (define-read-only (get-token-uri (token-id uint))
-  (begin
-    token-id
-    (ok none)
-  )
+  (ok (some (concat "https://procrastination.com/badges/" (int-to-ascii token-id))))
 )
 
 (define-read-only (get-owner (token-id uint))
   (ok (nft-get-owner? achievement-badge token-id))
+)
+
+(define-read-only (has-badge (user principal) (badge-type uint))
+  (ok (default-to false (map-get? user-badges { user: user, type: badge-type })))
 )
 
 (define-public (transfer (token-id uint) (sender principal) (recipient principal))
@@ -64,8 +67,12 @@
 (define-read-only (get-threshold (badge-type uint))
   (if (is-eq badge-type BADGE-BEGINNER) u144
     (if (is-eq badge-type BADGE-EXPERT) u1008
-      (if (is-eq badge-type BADGE-MASTER) u4320
-        u999999
+      (if (is-eq badge-type BADGE-PRO) u2016
+        (if (is-eq badge-type BADGE-MASTER) u4320
+          (if (is-eq badge-type BADGE-LEGEND) u14400
+            u999999
+          )
+        )
       )
     )
   )
