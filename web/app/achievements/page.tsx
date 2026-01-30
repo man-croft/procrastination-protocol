@@ -6,6 +6,8 @@ import { hasBadge, getClaimBadgeOptions, getStreakDays } from '../../lib/contrac
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
 
+export const dynamic = 'force-dynamic';
+
 const BADGES = [
   { id: 1, name: "Lazy Beginner", days: 1, icon: "🥱" },
   { id: 2, name: "Expert Procrastinator", days: 7, icon: "🛋️" },
