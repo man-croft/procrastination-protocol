@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '../../hooks/use-wallet';
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
+import { LoadingSpinner } from '../../components/Loading';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +16,17 @@ const BADGES = [
   { id: 5, name: "Legendary Statue", days: 100, icon: "💎" },
 ];
 
+interface AchievementError {
+  message: string;
+  type: 'wallet' | 'contract' | 'unknown';
+}
+
 export default function AchievementsPage() {
   const { address, isConnected } = useWallet();
   const [ownedBadges, setOwnedBadges] = useState<number[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<AchievementError | null>(null);
 
   useEffect(() => {
     if (address) {
@@ -30,6 +37,7 @@ export default function AchievementsPage() {
   const loadBadges = async () => {
     if (!address) return;
     setLoading(true);
+    setError(null);
     try {
       // Dynamic import to avoid build-time SSR issues with @stacks/transactions
       const { hasBadge, getStreakDays } = await import('../../lib/contracts');
@@ -39,14 +47,23 @@ export default function AchievementsPage() {
 
       const owned: number[] = [];
       for (const badge of BADGES) {
-        const ownedResult = await hasBadge(address, badge.id);
-        if (ownedResult) {
-          owned.push(badge.id);
+        try {
+          const ownedResult = await hasBadge(address, badge.id);
+          if (ownedResult) {
+            owned.push(badge.id);
+          }
+        } catch (badgeError) {
+          console.warn(`Failed to check badge ${badge.id}:`, badgeError);
         }
       }
       setOwnedBadges(owned);
     } catch (e) {
-      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : 'Failed to load achievements';
+      setError({
+        message: errorMessage,
+        type: 'contract'
+      });
+      console.error('Achievements load error:', e);
     } finally {
       setLoading(false);
     }
@@ -73,6 +90,26 @@ export default function AchievementsPage() {
         <p className="text-center text-zinc-600 dark:text-zinc-400 mb-12">
           Milestones for your journey of doing nothing. Claim them as NFTs.
         </p>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl max-w-2xl mx-auto">
+            <p className="text-red-700 dark:text-red-400 text-sm font-medium">
+              Error: {error.message}
+            </p>
+            <button 
+              onClick={() => setError(null)}
+              className="mt-2 text-xs text-red-600 dark:text-red-500 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner size="lg" message="Loading your achievements..." />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {BADGES.map((badge) => {
