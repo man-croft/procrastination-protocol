@@ -11,12 +11,19 @@ import {
 } from '../../lib/contracts';
 import { openContractCall } from '@stacks/connect';
 import Navbar from '../../components/Navbar';
+import { LoadingCard } from '../../components/Loading';
+
+interface DashboardError {
+  message: string;
+  type: 'wallet' | 'contract' | 'unknown';
+}
 
 export default function DashboardPage() {
   const { address, isConnected } = useWallet();
   const [lockedAmount, setLockedAmount] = useState<number>(0);
   const [streakDays, setStreakDays] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<DashboardError | null>(null);
 
   useEffect(() => {
     if (address) {
@@ -27,14 +34,22 @@ export default function DashboardPage() {
   const loadData = async () => {
     if (!address) return;
     setLoading(true);
+    setError(null);
     try {
-      const locked = await getLockedAmount(address);
-      const days = await getStreakDays(address);
+      const [locked, days] = await Promise.all([
+        getLockedAmount(address),
+        getStreakDays(address)
+      ]);
       
       setLockedAmount(Number(locked || 0));
       setStreakDays(Number(days || 0));
     } catch (e) {
-      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : 'Failed to load dashboard data';
+      setError({
+        message: errorMessage,
+        type: 'contract'
+      });
+      console.error('Dashboard load error:', e);
     } finally {
       setLoading(false);
     }
@@ -70,27 +85,49 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold">Your Inactivity</h1>
           <button 
             onClick={loadData}
-            className="text-sm text-zinc-500 hover:text-black dark:hover:text-white"
+            disabled={loading}
+            className="text-sm text-zinc-500 hover:text-black dark:hover:text-white disabled:opacity-50"
           >
-            Refresh
+            {loading ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
-            <h3 className="text-sm font-medium text-zinc-500 mb-2 uppercase tracking-wider">Locked STX</h3>
-            <p className="text-4xl font-black font-mono">
-              {(lockedAmount / 1000000).toLocaleString()} <span className="text-lg text-zinc-400">STX</span>
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-red-700 dark:text-red-400 text-sm font-medium">
+              Error: {error.message}
             </p>
+            <button 
+              onClick={() => setError(null)}
+              className="mt-2 text-xs text-red-600 dark:text-red-500 underline"
+            >
+              Dismiss
+            </button>
           </div>
-          
-          <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
-            <h3 className="text-sm font-medium text-zinc-500 mb-2 uppercase tracking-wider">Streak</h3>
-            <p className="text-4xl font-black font-mono">
-              {streakDays} <span className="text-lg text-zinc-400">Days</span>
-            </p>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <LoadingCard title="Locked STX" message="Loading balance..." />
+            <LoadingCard title="Streak" message="Loading streak..." />
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+              <h3 className="text-sm font-medium text-zinc-500 mb-2 uppercase tracking-wider">Locked STX</h3>
+              <p className="text-4xl font-black font-mono">
+                {(lockedAmount / 1000000).toLocaleString()} <span className="text-lg text-zinc-400">STX</span>
+              </p>
+            </div>
+            
+            <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
+              <h3 className="text-sm font-medium text-zinc-500 mb-2 uppercase tracking-wider">Streak</h3>
+              <p className="text-4xl font-black font-mono">
+                {streakDays} <span className="text-lg text-zinc-400">Days</span>
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <button
