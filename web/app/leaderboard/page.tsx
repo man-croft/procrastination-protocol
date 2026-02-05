@@ -28,13 +28,13 @@ export default function LeaderboardPage() {
     try {
       const data = await getLeaderboard();
       if (Array.isArray(data)) {
-        // Sort by blocks descending just in case, though contract usually appends
-        const sorted = (data as any[]).sort((a, b) => Number(b.blocks.value) - Number(a.blocks.value));
-        setEntries(sorted);
+        // Data is already sorted by contract (descending by blocks)
+        setEntries(data as any[]);
         setLastUpdated(new Date());
       }
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load leaderboard:', e);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
@@ -65,11 +65,24 @@ export default function LeaderboardPage() {
         <p className="text-center text-zinc-600 dark:text-zinc-400 mb-2">
           The top procrastinators who have done absolutely nothing for the longest time.
         </p>
+        <p className="text-center text-sm text-zinc-500 mb-2">
+          Minimum qualifying streak: 144 blocks (~1 day)
+        </p>
         {lastUpdated && (
-          <p className="text-center text-sm text-zinc-500 mb-12">
+          <p className="text-center text-sm text-zinc-500 mb-8">
             Last updated: {lastUpdated.toLocaleTimeString()}
           </p>
         )}
+
+        <div className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={loadLeaderboard}
+            disabled={loading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Refreshing...' : 'Refresh Rankings'}
+          </button>
+        </div>
 
         <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full">
