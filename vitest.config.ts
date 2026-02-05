@@ -37,6 +37,17 @@ export default defineConfig({
         // add or override options
       },
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        '*.config.*',
+        'coverage/',
+        '.next/',
+      ],
+    },
   },
 });
 
