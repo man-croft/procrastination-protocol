@@ -111,3 +111,51 @@
 (define-read-only (get-leaderboard)
   (ok (var-get top-scores))
 )
+
+(define-read-only (get-rank (user principal))
+  (let
+    (
+      (scores (var-get top-scores))
+    )
+    (match (index-of? scores { user: user, blocks: u0 })
+      rank (ok rank)
+      ERR_NOT_FOUND
+    )
+  )
+)
+
+(define-read-only (is-on-leaderboard (user principal))
+  (let
+    (
+      (scores (var-get top-scores))
+      (user-entry (filter (lambda (e) (is-eq (get user e) user)) scores))
+    )
+    (> (len user-entry) u0)
+  )
+)
+
+(define-read-only (get-top-streak)
+  (let
+    (
+      (scores (var-get top-scores))
+    )
+    (if (> (len scores) u0)
+      (ok (element-at? scores u0))
+      (ok none)
+    )
+  )
+)
+
+(define-read-only (get-minimum-qualifying-streak)
+  (let
+    (
+      (scores (var-get top-scores))
+    )
+    (if (is-eq (len scores) u10)
+      ;; Full leaderboard, need to beat the 10th place
+      (ok (some (get blocks (default-to { user: tx-sender, blocks: u0 } (element-at? scores u9)))))
+      ;; Not full, just need minimum
+      (ok (some MIN_LEADERBOARD_STREAK))
+    )
+  )
+)
